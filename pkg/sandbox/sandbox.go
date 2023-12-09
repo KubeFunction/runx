@@ -1,6 +1,6 @@
 package sandbox
 
 type Sandbox interface {
-	Run() (int, error)
+	Start() (int, error)
 	Kill() error
 }

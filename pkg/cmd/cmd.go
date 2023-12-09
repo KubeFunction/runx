@@ -1,7 +1,11 @@
 package cmd
 
 import (
+	"flag"
+
 	"github.com/spf13/cobra"
+	flags "github.com/spf13/pflag"
+	"k8s.io/klog"
 
 	"github.com/kubefunction/runx/pkg/cmd/templates"
 )
@@ -27,7 +31,12 @@ func NewRunXCommand() *cobra.Command {
 			},
 		},
 	}
+	cmds.Flags().SortFlags = false
 	groups.Add(cmds)
+
+	klog.InitFlags(nil)
+	flag.Parse()
+	flags.CommandLine.AddGoFlagSet(flag.CommandLine)
 	return cmds
 }
 

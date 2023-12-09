@@ -5,6 +5,13 @@ import (
 	"k8s.io/klog"
 )
 
+type WasmRuntimeType string
+
+const (
+	WasmEdgeRuntime WasmRuntimeType = "WasmEdge"
+	WasmTimeRuntime WasmRuntimeType = "WasmTime"
+)
+
 func newCmdWasm() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "wasm SUBCOMMAND",
@@ -18,19 +25,22 @@ func newCmdWasm() *cobra.Command {
 }
 
 func newWasmRun() *cobra.Command {
-	o := WasmRunOption{}
+	o := &WasmRunOption{}
 	cmd := &cobra.Command{
 		Use:                   "run -f FILE",
 		DisableFlagsInUseLine: true,
-		Short:                 "Run wasm file with WasmEdge",
-		Long:                  "Run wasm file with WasmEdge",
+		Short:                 "Start wasm file with Wasm Runtime",
+		Long:                  "Start wasm file with Wasm Runtime",
 		Run: func(cmd *cobra.Command, args []string) {
+			o.Args = args
+			o.Complete()
 			if err := o.Run(); err != nil {
 				klog.Errorf("wasm run cmd error %v", err)
 			}
 		},
 	}
 	cmd.Flags().StringVarP(&o.WasmFile, "file", "f", o.WasmFile, "The path of WASM file")
+	cmd.Flags().StringVarP((*string)(&o.Runtime), "runtime", "r", string(WasmEdgeRuntime), "The wasm runtime.such as WasmEdge、WasmTime, etc.")
 	return cmd
 }
 
