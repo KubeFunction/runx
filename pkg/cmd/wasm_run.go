@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"fmt"
+
 	"k8s.io/klog"
 
 	"github.com/kubefunction/runx/pkg/sandbox"
@@ -16,12 +18,14 @@ type WasmRunOption struct {
 
 func (o *WasmRunOption) Run() error {
 	pid, err := o.Sandbox.Init()
-	klog.Infof("test cmd %d %v %s", pid, err, o.Args)
-	return err
+	if err != nil {
+		return err
+	}
+	fmt.Print(pid)
+	return nil
 }
 func (o *WasmRunOption) RunWasm() error {
-	pid, err := o.Sandbox.Start()
-	klog.Infof("test cmd %d %v %s", pid, err, o.Args)
+	_, err := o.Sandbox.Start()
 	return err
 }
 func (o *WasmRunOption) Complete() {

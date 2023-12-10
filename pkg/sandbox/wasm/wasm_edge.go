@@ -15,7 +15,7 @@ import (
 type WasmEdgeSandboxConfig struct {
 	WASMFile     string
 	Args         []string
-	Pid          uint32
+	Pid          int
 	FunctionName string
 }
 type WasmEdgeSandbox struct {
@@ -25,8 +25,10 @@ type WasmEdgeSandbox struct {
 func NewWasmEdgeSandbox(c *WasmEdgeSandboxConfig) *WasmEdgeSandbox {
 	return &WasmEdgeSandbox{Config: c}
 }
-func (w *WasmEdgeSandbox) Init() (uint32, error) {
+func (w *WasmEdgeSandbox) Init() (int, error) {
 	//todo do something else
+
+	klog.V(3).Infof("WasmEdge: wasm file %s and Args %s", w.Config.WASMFile, w.Config.Args)
 	args := []string{"wasm", "run-wasm", "-f", w.Config.WASMFile, "-r", string(sandbox.WasmEdgeRuntime)}
 	args = append(args, w.Config.Args...)
 	runx, err := filepath.EvalSymlinks("/proc/self/exe")
@@ -40,15 +42,14 @@ func (w *WasmEdgeSandbox) Init() (uint32, error) {
 	if err := cmd.Start(); err != nil {
 		return 0, err
 	}
-	klog.V(3).Infof("exec wasm file process id %d", cmd.Process.Pid)
+	klog.V(3).Infof("WasmEdge: exec wasm file process id %d", cmd.Process.Pid)
 	if err := cmd.Wait(); err != nil {
 		return 0, err
 	}
-	return 0, nil
+	return cmd.Process.Pid, nil
 }
 
-func (w *WasmEdgeSandbox) Start() (uint32, error) {
-	klog.V(3).Infof("WasmEdge: wasm file %s and Args %s", w.Config.WASMFile, w.Config.Args)
+func (w *WasmEdgeSandbox) Start() (int, error) {
 	var conf = wasmedge.NewConfigure(wasmedge.REFERENCE_TYPES)
 	conf.AddConfig(wasmedge.WASI)
 	var vm = wasmedge.NewVMWithConfig(conf)

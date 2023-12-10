@@ -8,7 +8,7 @@ const (
 )
 
 type Sandbox interface {
-	Init() (uint32, error)
-	Start() (uint32, error)
+	Init() (int, error)
+	Start() (int, error)
 	Kill() error
 }
