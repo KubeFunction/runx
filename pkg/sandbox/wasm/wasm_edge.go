@@ -26,7 +26,7 @@ func NewWasmEdgeSandbox(c *WasmEdgeSandboxConfig) *WasmEdgeSandbox {
 }
 func (w *WasmEdgeSandbox) Init() (uint32, error) {
 	//todo do something else
-	args := []string{"/proc/self/exe", "wasm", "run-wasm", "-f", w.Config.WASMFile, "-r", string(sandbox.WasmEdgeRuntime)}
+	args := []string{"wasm", "run-wasm", "-f", w.Config.WASMFile, "-r", string(sandbox.WasmEdgeRuntime)}
 	args = append(args, w.Config.Args...)
 	cmd := exec.Command("/proc/self/exe", args...)
 	cmd.Stdout = os.Stdout
