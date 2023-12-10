@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"fmt"
+
 	"k8s.io/klog"
 
 	"github.com/kubefunction/runx/pkg/sandbox"
@@ -16,7 +18,8 @@ func (o *WasmPsOption) Run() error {
 	if err != nil {
 		return err
 	}
-	klog.Infof("wasm containers %s", containers)
+	klog.V(3).Infof("wasm containers %s", containers)
+	o.printRunningContainers(containers)
 	return nil
 }
 func (o *WasmPsOption) Complete() {
@@ -26,5 +29,12 @@ func (o *WasmPsOption) Complete() {
 		o.Sandbox = wasm.NewWasmEdgeSandbox(c)
 	default:
 		klog.Fatalf("not support the wasm runtime %s", o.Runtime)
+	}
+}
+
+func (o *WasmPsOption) printRunningContainers(containers []string) {
+	fmt.Println("CONTAINER ID\tIMAGE\t\tCOMMAND")
+	for _, container := range containers {
+		fmt.Printf("%s\t\n", container)
 	}
 }
