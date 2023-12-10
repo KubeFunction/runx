@@ -2,6 +2,8 @@ package wasm
 
 import (
 	"encoding/json"
+	"fmt"
+	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -42,11 +44,17 @@ func (w *WasmEdgeSandbox) Init() (int, error) {
 	if err := cmd.Start(); err != nil {
 		return 0, err
 	}
+	pid := cmd.Process.Pid
+	if err = w.generateRootPath(pid); err != nil {
+		// try to close the process
+		_ = w.Kill(pid)
+		return 0, err
+	}
 	klog.V(3).Infof("WasmEdge: exec wasm file process id %d", cmd.Process.Pid)
 	if err := cmd.Wait(); err != nil {
 		return 0, err
 	}
-	return cmd.Process.Pid, nil
+	return pid, nil
 }
 
 func (w *WasmEdgeSandbox) Start() (int, error) {
@@ -69,6 +77,26 @@ func (w *WasmEdgeSandbox) Start() (int, error) {
 	klog.V(3).Infof("wasm function output %s %d", s, wasi.WasiGetExitCode())
 	return 0, nil
 }
-func (w *WasmEdgeSandbox) Kill() error {
+func (w *WasmEdgeSandbox) Kill(pid int) error {
+	// step 1. kill process by pid
+
+	// step 2. remove root dir of the runtime
+
 	return nil
+}
+
+func (w *WasmEdgeSandbox) generateRootPath(pid int) error {
+	return os.MkdirAll(fmt.Sprintf("%s/%d", sandbox.WasmEdgeRuntimeRootPath, pid), 0755)
+}
+
+func (w *WasmEdgeSandbox) List() ([]string, error) {
+	entries, err := ioutil.ReadDir(sandbox.WasmEdgeRuntimeRootPath)
+	if err != nil {
+		return nil, err
+	}
+	containers := make([]string, len(entries))
+	for i, e := range entries {
+		containers[i] = e.Name()
+	}
+	return containers, nil
 }

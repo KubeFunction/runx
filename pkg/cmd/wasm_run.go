@@ -10,15 +10,15 @@ import (
 )
 
 type WasmRunOption struct {
+	wasmOptions
 	WasmFile string
 	Args     []string
-	Runtime  sandbox.WasmRuntimeType // wasm runtime.such as WasmEdge、WasmTime, etc.
-	Sandbox  sandbox.Sandbox
 }
 
 func (o *WasmRunOption) Run() error {
 	pid, err := o.Sandbox.Init()
 	if err != nil {
+		klog.Errorf("run wasm file error %v", err)
 		return err
 	}
 	fmt.Print(pid)

@@ -5,6 +5,7 @@ import (
 )
 
 type WasmKillOption struct {
+	wasmOptions
 	Pid int
 }
 
