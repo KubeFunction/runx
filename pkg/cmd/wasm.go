@@ -68,6 +68,7 @@ func newWasmKill() *cobra.Command {
 		Short:                 "Kill the wasm process",
 		Long:                  "Kill the wasm process",
 		Run: func(cmd *cobra.Command, args []string) {
+			o.Complete()
 			if err := o.Run(); err != nil {
 				klog.Errorf("kill wasm process error %v", err)
 			}
