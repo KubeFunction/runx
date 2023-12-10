@@ -8,24 +8,22 @@ import (
 )
 
 func newCmdWasm() *cobra.Command {
-	o := wasmOptions{}
 	cmd := &cobra.Command{
 		Use:   "wasm SUBCOMMAND",
 		Short: "wasm run|kill",
 		Long:  "wasm run|kill",
 		Run:   runHelp,
 	}
-	cmd.AddCommand(newWasmRun(o))
-	cmd.AddCommand(newWasmRunDo(o))
-	cmd.AddCommand(newWasmKill(o))
-	cmd.AddCommand(newWasmPs(o))
-	cmd.Flags().StringVarP((*string)(&o.Runtime), "runtime", "r", string(sandbox.WasmEdgeRuntime), "The wasm runtime.such as WasmEdge、WasmTime, etc.")
+	cmd.AddCommand(newWasmRun())
+	cmd.AddCommand(newWasmRunDo())
+	cmd.AddCommand(newWasmKill())
+	cmd.AddCommand(newWasmPs())
+
 	return cmd
 }
 
-func newWasmRun(options wasmOptions) *cobra.Command {
+func newWasmRun() *cobra.Command {
 	o := &WasmRunOption{}
-	o.wasmOptions = options
 	cmd := &cobra.Command{
 		Use:                   "run -f FILE",
 		DisableFlagsInUseLine: true,
@@ -40,11 +38,11 @@ func newWasmRun(options wasmOptions) *cobra.Command {
 		},
 	}
 	cmd.Flags().StringVarP(&o.WasmFile, "file", "f", o.WasmFile, "The path of WASM file")
+	cmd.Flags().StringVarP((*string)(&o.Runtime), "runtime", "r", string(sandbox.WasmEdgeRuntime), "The wasm runtime.such as WasmEdge、WasmTime, etc.")
 	return cmd
 }
-func newWasmRunDo(options wasmOptions) *cobra.Command {
+func newWasmRunDo() *cobra.Command {
 	o := &WasmRunOption{}
-	o.wasmOptions = options
 	cmd := &cobra.Command{
 		Use:                   "run-wasm -f FILE",
 		DisableFlagsInUseLine: true,
@@ -61,9 +59,8 @@ func newWasmRunDo(options wasmOptions) *cobra.Command {
 	cmd.Flags().StringVarP(&o.WasmFile, "file", "f", o.WasmFile, "The path of WASM file")
 	return cmd
 }
-func newWasmKill(options wasmOptions) *cobra.Command {
+func newWasmKill() *cobra.Command {
 	o := WasmKillOption{}
-	o.wasmOptions = options
 	cmd := &cobra.Command{
 		Use:                   "kill -p PID",
 		DisableFlagsInUseLine: true,
@@ -76,12 +73,12 @@ func newWasmKill(options wasmOptions) *cobra.Command {
 		},
 	}
 	cmd.Flags().IntVarP(&o.Pid, "pid", "p", o.Pid, "The pid of WASM process")
+	cmd.Flags().StringVarP((*string)(&o.Runtime), "runtime", "r", string(sandbox.WasmEdgeRuntime), "The wasm runtime.such as WasmEdge、WasmTime, etc.")
 	return cmd
 }
 
-func newWasmPs(options wasmOptions) *cobra.Command {
+func newWasmPs() *cobra.Command {
 	o := WasmPsOption{}
-	o.wasmOptions = options
 	cmd := &cobra.Command{
 		Use:                   "ps ",
 		DisableFlagsInUseLine: true,
@@ -94,5 +91,6 @@ func newWasmPs(options wasmOptions) *cobra.Command {
 			}
 		},
 	}
+	cmd.Flags().StringVarP((*string)(&o.Runtime), "runtime", "r", string(sandbox.WasmEdgeRuntime), "The wasm runtime.such as WasmEdge、WasmTime, etc.")
 	return cmd
 }
