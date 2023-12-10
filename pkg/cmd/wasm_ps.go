@@ -12,6 +12,11 @@ type WasmPsOption struct {
 }
 
 func (o *WasmPsOption) Run() error {
+	containers, err := o.Sandbox.List()
+	if err != nil {
+		return err
+	}
+	klog.Infof("wasm containers %s", containers)
 	return nil
 }
 func (o *WasmPsOption) Complete() {
