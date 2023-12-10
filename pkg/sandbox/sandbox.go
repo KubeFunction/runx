@@ -9,11 +9,11 @@ type WasmRuntimeType string
 const (
 	WasmEdgeRuntime WasmRuntimeType = "WasmEdge"
 	WasmTimeRuntime WasmRuntimeType = "WasmTime"
-	RootPath        string          = "/var/lib/docker"
+	RootPath        string          = "/var/lib/wasm"
 )
 
 var (
-	WasmEdgeRuntimeRootPath = fmt.Sprintf("%s/%s", RootPath, WasmTimeRuntime)
+	WasmEdgeRuntimeRootPath = fmt.Sprintf("%s/%s", RootPath, WasmEdgeRuntime)
 )
 
 type Sandbox interface {
