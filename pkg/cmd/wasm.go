@@ -3,13 +3,8 @@ package cmd
 import (
 	"github.com/spf13/cobra"
 	"k8s.io/klog"
-)
 
-type WasmRuntimeType string
-
-const (
-	WasmEdgeRuntime WasmRuntimeType = "WasmEdge"
-	WasmTimeRuntime WasmRuntimeType = "WasmTime"
+	"github.com/kubefunction/runx/pkg/sandbox"
 )
 
 func newCmdWasm() *cobra.Command {
@@ -20,6 +15,7 @@ func newCmdWasm() *cobra.Command {
 		Run:   runHelp,
 	}
 	cmd.AddCommand(newWasmRun())
+	cmd.AddCommand(newWasmRunDo())
 	cmd.AddCommand(newWasmKill())
 	return cmd
 }
@@ -40,10 +36,28 @@ func newWasmRun() *cobra.Command {
 		},
 	}
 	cmd.Flags().StringVarP(&o.WasmFile, "file", "f", o.WasmFile, "The path of WASM file")
-	cmd.Flags().StringVarP((*string)(&o.Runtime), "runtime", "r", string(WasmEdgeRuntime), "The wasm runtime.such as WasmEdge、WasmTime, etc.")
+	cmd.Flags().StringVarP((*string)(&o.Runtime), "runtime", "r", string(sandbox.WasmEdgeRuntime), "The wasm runtime.such as WasmEdge、WasmTime, etc.")
 	return cmd
 }
-
+func newWasmRunDo() *cobra.Command {
+	o := &WasmRunOption{}
+	cmd := &cobra.Command{
+		Use:                   "run-wasm -f FILE",
+		DisableFlagsInUseLine: true,
+		Short:                 "",
+		Long:                  "",
+		Run: func(cmd *cobra.Command, args []string) {
+			o.Args = args
+			o.Complete()
+			if err := o.RunWasm(); err != nil {
+				klog.Errorf("wasm run cmd error %v", err)
+			}
+		},
+	}
+	cmd.Flags().StringVarP(&o.WasmFile, "file", "f", o.WasmFile, "The path of WASM file")
+	cmd.Flags().StringVarP((*string)(&o.Runtime), "runtime", "r", string(sandbox.WasmEdgeRuntime), "The wasm runtime.such as WasmEdge、WasmTime, etc.")
+	return cmd
+}
 func newWasmKill() *cobra.Command {
 	o := WasmKillOption{}
 	cmd := &cobra.Command{

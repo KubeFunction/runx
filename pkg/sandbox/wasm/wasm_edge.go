@@ -3,15 +3,19 @@ package wasm
 import (
 	"encoding/json"
 	"os"
+	"os/exec"
 
 	"github.com/second-state/WasmEdge-go/wasmedge"
 	"k8s.io/klog"
+
+	"github.com/kubefunction/runx/pkg/sandbox"
 )
 
 type WasmEdgeSandboxConfig struct {
-	WASMFile string
-	Args     []string
-	Pid      uint32
+	WASMFile     string
+	Args         []string
+	Pid          uint32
+	FunctionName string
 }
 type WasmEdgeSandbox struct {
 	Config *WasmEdgeSandboxConfig
@@ -20,7 +24,25 @@ type WasmEdgeSandbox struct {
 func NewWasmEdgeSandbox(c *WasmEdgeSandboxConfig) *WasmEdgeSandbox {
 	return &WasmEdgeSandbox{Config: c}
 }
-func (w *WasmEdgeSandbox) Start() (int, error) {
+func (w *WasmEdgeSandbox) Init() (uint32, error) {
+	//todo do something else
+	args := []string{"/proc/self/exe", "wasm", "run-wasm", "-f", w.Config.WASMFile, "-r", string(sandbox.WasmEdgeRuntime)}
+	args = append(args, w.Config.Args...)
+	cmd := exec.Command("/proc/self/exe", args...)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	cmd.Stdin = os.Stdin
+	if err := cmd.Start(); err != nil {
+		return 0, err
+	}
+	klog.V(3).Infof("exec wasm file process id %s", cmd.Process.Pid)
+	if err := cmd.Wait(); err != nil {
+		return 0, err
+	}
+	return 0, nil
+}
+
+func (w *WasmEdgeSandbox) Start() (uint32, error) {
 	klog.V(3).Infof("WasmEdge: wasm file %s and Args %s", w.Config.WASMFile, w.Config.Args)
 	var conf = wasmedge.NewConfigure(wasmedge.REFERENCE_TYPES)
 	conf.AddConfig(wasmedge.WASI)
@@ -29,7 +51,7 @@ func (w *WasmEdgeSandbox) Start() (int, error) {
 	defer vm.Release()
 	defer conf.Release()
 	wasi.InitWasi(
-		os.Args[1:],     // The args
+		w.Config.Args,   // The args
 		os.Environ(),    // The envs
 		[]string{".:."}, // The mapping directories
 	)
