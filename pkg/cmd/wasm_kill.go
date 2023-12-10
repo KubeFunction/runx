@@ -10,6 +10,9 @@ type WasmKillOption struct {
 }
 
 func (o *WasmKillOption) Run() error {
-	klog.Infof("test kill cmd %d", o.Pid)
+	if err := o.Sandbox.Kill(); err != nil {
+		klog.Errorf("remove dir error %v", err)
+		return err
+	}
 	return nil
 }

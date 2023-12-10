@@ -19,6 +19,6 @@ var (
 type Sandbox interface {
 	Init() (int, error)
 	Start() (int, error)
-	Kill(pid int) error
+	Kill() error
 	List() ([]string, error)
 }

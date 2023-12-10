@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"syscall"
 
 	"github.com/second-state/WasmEdge-go/wasmedge"
 	"k8s.io/klog"
@@ -47,7 +48,8 @@ func (w *WasmEdgeSandbox) Init() (int, error) {
 	pid := cmd.Process.Pid
 	if err = w.generateRootPath(pid); err != nil {
 		// try to close the process
-		_ = w.Kill(pid)
+		w.Config.Pid = pid
+		_ = w.Kill()
 		return 0, err
 	}
 	klog.V(3).Infof("WasmEdge: exec wasm file process id %d", cmd.Process.Pid)
@@ -77,12 +79,17 @@ func (w *WasmEdgeSandbox) Start() (int, error) {
 	klog.V(3).Infof("wasm function output %s %d", s, wasi.WasiGetExitCode())
 	return 0, nil
 }
-func (w *WasmEdgeSandbox) Kill(pid int) error {
+func (w *WasmEdgeSandbox) Kill() error {
 	// step 1. kill process by pid
-
+	p, err := os.FindProcess(w.Config.Pid)
+	if err != nil {
+		return err
+	}
+	if err = p.Signal(syscall.SIGTERM); err != nil {
+		return err
+	}
 	// step 2. remove root dir of the runtime
-
-	return nil
+	return os.RemoveAll(fmt.Sprintf("%s/%d", sandbox.WasmEdgeRuntimeRootPath, w.Config.Pid))
 }
 
 func (w *WasmEdgeSandbox) generateRootPath(pid int) error {
