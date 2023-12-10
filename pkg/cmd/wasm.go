@@ -57,6 +57,7 @@ func newWasmRunDo() *cobra.Command {
 		},
 	}
 	cmd.Flags().StringVarP(&o.WasmFile, "file", "f", o.WasmFile, "The path of WASM file")
+	cmd.Flags().StringVarP((*string)(&o.Runtime), "runtime", "r", string(sandbox.WasmEdgeRuntime), "The wasm runtime.such as WasmEdge、WasmTime, etc.")
 	return cmd
 }
 func newWasmKill() *cobra.Command {
