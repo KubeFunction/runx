@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"os"
 	"os/exec"
+	"path/filepath"
 
 	"github.com/second-state/WasmEdge-go/wasmedge"
 	"k8s.io/klog"
@@ -28,14 +29,18 @@ func (w *WasmEdgeSandbox) Init() (uint32, error) {
 	//todo do something else
 	args := []string{"wasm", "run-wasm", "-f", w.Config.WASMFile, "-r", string(sandbox.WasmEdgeRuntime)}
 	args = append(args, w.Config.Args...)
-	cmd := exec.Command("/proc/self/exe", args...)
+	runx, err := filepath.EvalSymlinks("/proc/self/exe")
+	if err != nil {
+		return 0, err
+	}
+	cmd := exec.Command(runx, args...)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	cmd.Stdin = os.Stdin
 	if err := cmd.Start(); err != nil {
 		return 0, err
 	}
-	klog.V(3).Infof("exec wasm file process id %s", cmd.Process.Pid)
+	klog.V(3).Infof("exec wasm file process id %d", cmd.Process.Pid)
 	if err := cmd.Wait(); err != nil {
 		return 0, err
 	}
