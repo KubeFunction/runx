@@ -13,11 +13,7 @@ type WasmKillOption struct {
 }
 
 func (o *WasmKillOption) Run() error {
-	if err := o.Sandbox.Kill(); err != nil {
-		klog.Errorf("remove dir error %v", err)
-		return err
-	}
-	return nil
+	return o.Sandbox.Kill()
 }
 func (o *WasmKillOption) Complete() {
 	switch o.Runtime {

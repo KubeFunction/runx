@@ -2,6 +2,7 @@ package wasm
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -85,8 +86,10 @@ func (w *WasmEdgeSandbox) Kill() error {
 	if err != nil {
 		return err
 	}
-	if err = p.Signal(syscall.SIGTERM); err != nil {
+	if err = p.Signal(syscall.SIGTERM); err != nil && !errors.Is(err, os.ErrProcessDone) {
 		return err
+	} else if errors.Is(err, os.ErrProcessDone) {
+		klog.Warningf("stop wasm process error: %v", err)
 	}
 	// step 2. remove root dir of the runtime
 	return os.RemoveAll(fmt.Sprintf("%s/%d", sandbox.WasmEdgeRuntimeRootPath, w.Config.Pid))
