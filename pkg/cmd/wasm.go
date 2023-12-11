@@ -25,7 +25,7 @@ func newCmdWasm() *cobra.Command {
 func newWasmRun() *cobra.Command {
 	o := &WasmRunOption{}
 	cmd := &cobra.Command{
-		Use:                   "run -f FILE",
+		Use:                   "run -f FILE [-d]",
 		DisableFlagsInUseLine: true,
 		Short:                 "Start wasm file with Wasm Runtime",
 		Long:                  "Start wasm file with Wasm Runtime",
@@ -37,14 +37,15 @@ func newWasmRun() *cobra.Command {
 			}
 		},
 	}
-	cmd.Flags().StringVarP(&o.WasmFile, "file", "f", o.WasmFile, "The path of WASM file")
+	cmd.Flags().StringVarP(&o.WasmFile, "file", "f", "", "The path of WASM file")
+	cmd.Flags().BoolVarP(&o.Detach, "detach", "d", false, "Run wasm process in background and print process ID")
 	cmd.Flags().StringVarP((*string)(&o.Runtime), "runtime", "r", string(sandbox.WasmEdgeRuntime), "The wasm runtime.such as WasmEdge、WasmTime, etc.")
 	return cmd
 }
 func newWasmRunDo() *cobra.Command {
 	o := &WasmRunOption{}
 	cmd := &cobra.Command{
-		Use:                   "run-wasm -f FILE",
+		Use:                   "run-wasm -f FILE [-d]",
 		DisableFlagsInUseLine: true,
 		Short:                 "",
 		Long:                  "",
@@ -56,7 +57,8 @@ func newWasmRunDo() *cobra.Command {
 			}
 		},
 	}
-	cmd.Flags().StringVarP(&o.WasmFile, "file", "f", o.WasmFile, "The path of WASM file")
+	cmd.Flags().StringVarP(&o.WasmFile, "file", "f", "", "The path of WASM file")
+	cmd.Flags().BoolVarP(&o.Detach, "detach", "d", false, "Run wasm process in background and print process ID")
 	cmd.Flags().StringVarP((*string)(&o.Runtime), "runtime", "r", string(sandbox.WasmEdgeRuntime), "The wasm runtime.such as WasmEdge、WasmTime, etc.")
 	return cmd
 }

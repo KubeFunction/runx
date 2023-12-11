@@ -21,6 +21,7 @@ type WasmEdgeSandboxConfig struct {
 	Args         []string
 	Pid          int
 	FunctionName string
+	Detach       bool
 }
 type WasmEdgeSandbox struct {
 	Config *WasmEdgeSandboxConfig

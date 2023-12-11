@@ -13,6 +13,7 @@ type WasmRunOption struct {
 	wasmOptions
 	WasmFile string
 	Args     []string
+	Detach   bool
 }
 
 func (o *WasmRunOption) Run() error {
@@ -34,6 +35,7 @@ func (o *WasmRunOption) Complete() {
 		c := &wasm.WasmEdgeSandboxConfig{
 			WASMFile: o.WasmFile,
 			Args:     o.Args,
+			Detach:   o.Detach,
 		}
 		o.Sandbox = wasm.NewWasmEdgeSandbox(c)
 	default:
