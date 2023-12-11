@@ -55,10 +55,11 @@ func (w *WasmEdgeSandbox) Init() (int, error) {
 		return 0, err
 	}
 	klog.V(3).Infof("WasmEdge: exec wasm file process id %d", cmd.Process.Pid)
-	if err := cmd.Wait(); err != nil {
-		return 0, err
+	if w.Config.Detach {
+		return pid, nil
 	}
-	return pid, nil
+	return 0, cmd.Wait()
+
 }
 
 func (w *WasmEdgeSandbox) Start() (int, error) {
