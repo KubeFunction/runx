@@ -2,6 +2,8 @@ package sandbox
 
 import (
 	"fmt"
+
+	"github.com/opencontainers/runtime-spec/specs-go"
 )
 
 type WasmRuntimeType string
@@ -21,4 +23,5 @@ type Sandbox interface {
 	Start() (int, error)
 	Kill() error
 	List() ([]string, error)
+	Sate() (*specs.State, error)
 }

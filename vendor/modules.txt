@@ -1,6 +1,9 @@
 # github.com/inconshreveable/mousetrap v1.1.0
 ## explicit; go 1.18
 github.com/inconshreveable/mousetrap
+# github.com/opencontainers/runtime-spec v1.1.0
+## explicit
+github.com/opencontainers/runtime-spec/specs-go
 # github.com/second-state/WasmEdge-go v0.13.4
 ## explicit; go 1.16
 github.com/second-state/WasmEdge-go/wasmedge

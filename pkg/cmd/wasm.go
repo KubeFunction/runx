@@ -18,6 +18,7 @@ func newCmdWasm() *cobra.Command {
 	cmd.AddCommand(newWasmRunDo())
 	cmd.AddCommand(newWasmKill())
 	cmd.AddCommand(newWasmPs())
+	cmd.AddCommand(newWasmState())
 
 	return cmd
 }
@@ -96,5 +97,23 @@ func newWasmPs() *cobra.Command {
 		},
 	}
 	cmd.Flags().StringVarP((*string)(&o.Runtime), "runtime", "r", string(sandbox.WasmEdgeRuntime), "The wasm runtime.such as WasmEdge、WasmTime, etc.")
+	return cmd
+}
+
+func newWasmState() *cobra.Command {
+	o := WasmStateOption{}
+	cmd := &cobra.Command{
+		Use:                   "state -p PID",
+		DisableFlagsInUseLine: true,
+		Short:                 "Get wasm process state by pid",
+		Long:                  "Get wasm process state by pid",
+		Run: func(cmd *cobra.Command, args []string) {
+			o.Complete()
+			if err := o.Run(); err != nil {
+				klog.Errorf("get wasm process state error %v", err)
+			}
+		},
+	}
+	cmd.Flags().IntVarP(&o.Pid, "pid", "p", o.Pid, "The pid of WASM process")
 	return cmd
 }

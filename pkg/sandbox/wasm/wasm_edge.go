@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"syscall"
 
+	"github.com/opencontainers/runtime-spec/specs-go"
 	"github.com/second-state/WasmEdge-go/wasmedge"
 	"k8s.io/klog"
 
@@ -111,4 +112,9 @@ func (w *WasmEdgeSandbox) List() ([]string, error) {
 		containers[i] = e.Name()
 	}
 	return containers, nil
+}
+
+func (w *WasmEdgeSandbox) Sate() (*specs.State, error) {
+	//TODO
+	return nil, nil
 }
