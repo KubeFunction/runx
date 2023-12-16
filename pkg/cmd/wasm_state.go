@@ -25,7 +25,7 @@ func (o *WasmStateOption) Run() error {
 		klog.Errorf("json marshal container state error %v", err)
 		return err
 	}
-	fmt.Printf("%s", stateJson)
+	fmt.Printf("%s\n", stateJson)
 	return nil
 }
 
