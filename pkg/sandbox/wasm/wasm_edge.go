@@ -142,5 +142,5 @@ func (w *WasmEdgeSandbox) Sate() (*libcontainer.ContainerState, error) {
 	}
 	containerSate.Cmd = cmd
 	containerSate.State.Status = status
-	return containerSate, nil
+	return containerSate, err
 }

@@ -18,8 +18,7 @@ type WasmStateOption struct {
 func (o *WasmStateOption) Run() error {
 	state, err := o.Sandbox.Sate()
 	if err != nil {
-		klog.Errorf("get wasm process state error %v", err)
-		return err
+		klog.Warningf("get wasm process state error %v", err)
 	}
 	stateJson, err := json.Marshal(state)
 	if err != nil {
