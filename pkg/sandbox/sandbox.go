@@ -3,7 +3,7 @@ package sandbox
 import (
 	"fmt"
 
-	"github.com/opencontainers/runtime-spec/specs-go"
+	"github.com/kubefunction/runx/pkg/sandbox/libcontainer"
 )
 
 type WasmRuntimeType string
@@ -23,5 +23,5 @@ type Sandbox interface {
 	Start() (int, error)
 	Kill() error
 	List() ([]string, error)
-	Sate() (*specs.State, error)
+	Sate() (*libcontainer.ContainerState, error)
 }

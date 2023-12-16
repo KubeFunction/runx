@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strconv"
 	"syscall"
 
 	"github.com/opencontainers/runtime-spec/specs-go"
@@ -15,6 +16,8 @@ import (
 	"k8s.io/klog"
 
 	"github.com/kubefunction/runx/pkg/sandbox"
+	"github.com/kubefunction/runx/pkg/sandbox/libcontainer"
+	"github.com/kubefunction/runx/pkg/sandbox/system"
 )
 
 type WasmEdgeSandboxConfig struct {
@@ -55,7 +58,7 @@ func (w *WasmEdgeSandbox) Init() (int, error) {
 		_ = w.Kill()
 		return 0, err
 	}
-	klog.V(3).Infof("WasmEdge: exec wasm file process id %d", cmd.Process.Pid)
+	klog.V(3).Infof("WasmEdge: wasm process id %d", cmd.Process.Pid)
 	if w.Config.Detach {
 		return pid, nil
 	}
@@ -114,7 +117,29 @@ func (w *WasmEdgeSandbox) List() ([]string, error) {
 	return containers, nil
 }
 
-func (w *WasmEdgeSandbox) Sate() (*specs.State, error) {
-	//TODO
-	return nil, nil
+func (w *WasmEdgeSandbox) Sate() (*libcontainer.ContainerState, error) {
+	cmd, err := os.Readlink("/proc/" + strconv.Itoa(w.Config.Pid) + "/exe")
+	if err != nil {
+		return nil, err
+	}
+	var status = specs.StateRunning
+	stat, err := system.Stat(w.Config.Pid)
+	if err != nil {
+		status = specs.StateStopped
+	} else if stat.State == system.Zombie || stat.State == system.Dead {
+		status = specs.StateStopped
+	}
+	state := specs.State{
+		Version:     "1.0",
+		Status:      status,
+		Pid:         w.Config.Pid,
+		ID:          strconv.Itoa(w.Config.Pid),
+		Bundle:      "",
+		Annotations: nil,
+	}
+	containerSate := &libcontainer.ContainerState{
+		State: state,
+		Cmd:   cmd,
+	}
+	return containerSate, nil
 }

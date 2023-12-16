@@ -1,7 +1,7 @@
 package wasm
 
 import (
-	"github.com/opencontainers/runtime-spec/specs-go"
+	"github.com/kubefunction/runx/pkg/sandbox/libcontainer"
 )
 
 type ProcessSandbox struct {
@@ -20,6 +20,6 @@ func (w *ProcessSandbox) List() ([]string, error) {
 	return nil, nil
 }
 
-func (w *ProcessSandbox) Sate() (*specs.State, error) {
+func (w *ProcessSandbox) Sate() (*libcontainer.ContainerState, error) {
 	return nil, nil
 }
