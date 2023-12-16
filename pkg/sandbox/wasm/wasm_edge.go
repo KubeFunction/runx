@@ -118,17 +118,7 @@ func (w *WasmEdgeSandbox) List() ([]string, error) {
 }
 
 func (w *WasmEdgeSandbox) Sate() (*libcontainer.ContainerState, error) {
-	cmd, err := os.Readlink("/proc/" + strconv.Itoa(w.Config.Pid) + "/exe")
-	if err != nil {
-		return nil, err
-	}
 	var status = specs.StateRunning
-	stat, err := system.Stat(w.Config.Pid)
-	if err != nil {
-		status = specs.StateStopped
-	} else if stat.State == system.Zombie || stat.State == system.Dead {
-		status = specs.StateStopped
-	}
 	state := specs.State{
 		Version:     "1.0",
 		Status:      status,
@@ -139,7 +129,18 @@ func (w *WasmEdgeSandbox) Sate() (*libcontainer.ContainerState, error) {
 	}
 	containerSate := &libcontainer.ContainerState{
 		State: state,
-		Cmd:   cmd,
 	}
+	cmd, err := os.Readlink("/proc/" + strconv.Itoa(w.Config.Pid) + "/exe")
+	if err != nil {
+		return containerSate, err
+	}
+	stat, err := system.Stat(w.Config.Pid)
+	if err != nil {
+		status = specs.StateStopped
+	} else if stat.State == system.Zombie || stat.State == system.Dead {
+		status = specs.StateStopped
+	}
+	containerSate.Cmd = cmd
+	containerSate.State.Status = status
 	return containerSate, nil
 }
