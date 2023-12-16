@@ -132,6 +132,7 @@ func (w *WasmEdgeSandbox) Sate() (*libcontainer.ContainerState, error) {
 	}
 	cmd, err := os.Readlink("/proc/" + strconv.Itoa(w.Config.Pid) + "/exe")
 	if err != nil {
+		containerSate.State.Status = specs.StateStopped
 		return containerSate, err
 	}
 	stat, err := system.Stat(w.Config.Pid)
