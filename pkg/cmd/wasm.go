@@ -114,6 +114,7 @@ func newWasmState() *cobra.Command {
 			}
 		},
 	}
+	cmd.Flags().StringVarP((*string)(&o.Runtime), "runtime", "r", string(sandbox.WasmEdgeRuntime), "The wasm runtime.such as WasmEdge、WasmTime, etc.")
 	cmd.Flags().IntVarP(&o.Pid, "pid", "p", o.Pid, "The pid of WASM process")
 	return cmd
 }
