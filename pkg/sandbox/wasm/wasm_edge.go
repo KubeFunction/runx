@@ -67,7 +67,7 @@ func (w *WasmEdgeSandbox) Init() (int, error) {
 			State: specs.State{
 				Version:     "1.0", // todo
 				Status:      status,
-				Pid:         w.Config.Pid,
+				Pid:         pid,
 				ID:          strconv.Itoa(pid),
 				Bundle:      w.Config.WASMFile,
 				Annotations: nil,
@@ -77,7 +77,7 @@ func (w *WasmEdgeSandbox) Init() (int, error) {
 		ContainerId: strconv.Itoa(pid),
 		Labels:      nil,
 	}
-	err = system.WriteContainerInfo(sandbox.WasmEdgeRuntimeRootPath, w.Config.Pid, containerInfo)
+	err = system.WriteContainerInfo(sandbox.WasmEdgeRuntimeRootPath, pid, containerInfo)
 	if err != nil {
 		return 0, err
 	}
