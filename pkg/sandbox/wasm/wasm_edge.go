@@ -59,7 +59,25 @@ func (w *WasmEdgeSandbox) Init() (int, error) {
 		_ = w.Kill()
 		return 0, err
 	}
-	klog.V(3).Infof("WasmEdge: wasm process id %d", cmd.Process.Pid)
+	klog.V(3).Infof("WasmEdge: wasm process id %d", pid)
+	// write container info into config.json
+	cmString, status, err := system.GetContainerCmdAndStatus(pid)
+	containerInfo := &types.ContainerInfo{
+		ContainerState: libcontainer.ContainerState{
+			State: specs.State{
+				Version:     "1.0", // todo
+				Status:      status,
+				Pid:         w.Config.Pid,
+				ID:          strconv.Itoa(pid),
+				Bundle:      w.Config.WASMFile,
+				Annotations: nil,
+			},
+			Cmd: cmString,
+		},
+		ContainerId: strconv.Itoa(pid),
+		Labels:      nil,
+	}
+	err = system.WriteContainerInfo(sandbox.WasmEdgeRuntimeRootPath, w.Config.Pid, containerInfo)
 	if w.Config.Detach {
 		return pid, nil
 	}
@@ -86,25 +104,6 @@ func (w *WasmEdgeSandbox) Start() (int, error) {
 
 	s, _ := json.Marshal(res)
 	klog.V(3).Infof("wasm function output %s %d", s, wasi.WasiGetExitCode())
-
-	// write container info into config.json
-	cmd, status, err := system.GetContainerCmdAndStatus(w.Config.Pid)
-	containerInfo := &types.ContainerInfo{
-		ContainerState: libcontainer.ContainerState{
-			State: specs.State{
-				Version:     "1.0", // todo
-				Status:      status,
-				Pid:         w.Config.Pid,
-				ID:          strconv.Itoa(w.Config.Pid),
-				Bundle:      w.Config.WASMFile,
-				Annotations: nil,
-			},
-			Cmd: cmd,
-		},
-		ContainerId: strconv.Itoa(w.Config.Pid),
-		Labels:      nil,
-	}
-	err = system.WriteContainerInfo(sandbox.WasmEdgeRuntimeRootPath, w.Config.Pid, containerInfo)
 	return 0, err
 }
 func (w *WasmEdgeSandbox) Kill() error {
