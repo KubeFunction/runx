@@ -78,6 +78,9 @@ func (w *WasmEdgeSandbox) Init() (int, error) {
 		Labels:      nil,
 	}
 	err = system.WriteContainerInfo(sandbox.WasmEdgeRuntimeRootPath, w.Config.Pid, containerInfo)
+	if err != nil {
+		return 0, err
+	}
 	if w.Config.Detach {
 		return pid, nil
 	}
