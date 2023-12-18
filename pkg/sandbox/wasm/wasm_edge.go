@@ -18,6 +18,7 @@ import (
 	"github.com/kubefunction/runx/pkg/sandbox"
 	"github.com/kubefunction/runx/pkg/sandbox/libcontainer"
 	"github.com/kubefunction/runx/pkg/sandbox/system"
+	"github.com/kubefunction/runx/pkg/types"
 )
 
 type WasmEdgeSandboxConfig struct {
@@ -52,7 +53,7 @@ func (w *WasmEdgeSandbox) Init() (int, error) {
 		return 0, err
 	}
 	pid := cmd.Process.Pid
-	if err = w.generateRootPath(pid); err != nil {
+	if err = system.GenerateContainerRootPath(sandbox.WasmEdgeRuntimeRootPath, pid); err != nil {
 		// try to close the process
 		w.Config.Pid = pid
 		_ = w.Kill()
@@ -82,9 +83,29 @@ func (w *WasmEdgeSandbox) Start() (int, error) {
 	if err != nil {
 		return 0, err
 	}
+
 	s, _ := json.Marshal(res)
 	klog.V(3).Infof("wasm function output %s %d", s, wasi.WasiGetExitCode())
-	return 0, nil
+
+	// write container info into config.json
+	cmd, status, err := system.GetContainerCmdAndStatus(w.Config.Pid)
+	containerInfo := &types.ContainerInfo{
+		ContainerState: libcontainer.ContainerState{
+			State: specs.State{
+				Version:     "1.0", // todo
+				Status:      status,
+				Pid:         w.Config.Pid,
+				ID:          strconv.Itoa(w.Config.Pid),
+				Bundle:      w.Config.WASMFile,
+				Annotations: nil,
+			},
+			Cmd: cmd,
+		},
+		ContainerId: strconv.Itoa(w.Config.Pid),
+		Labels:      nil,
+	}
+	err = system.WriteContainerInfo(sandbox.WasmEdgeRuntimeRootPath, w.Config.Pid, containerInfo)
+	return 0, err
 }
 func (w *WasmEdgeSandbox) Kill() error {
 	// step 1. kill process by pid
@@ -99,10 +120,6 @@ func (w *WasmEdgeSandbox) Kill() error {
 	}
 	// step 2. remove root dir of the runtime
 	return os.RemoveAll(fmt.Sprintf("%s/%d", sandbox.WasmEdgeRuntimeRootPath, w.Config.Pid))
-}
-
-func (w *WasmEdgeSandbox) generateRootPath(pid int) error {
-	return os.MkdirAll(fmt.Sprintf("%s/%d", sandbox.WasmEdgeRuntimeRootPath, pid), 0755)
 }
 
 func (w *WasmEdgeSandbox) List() ([]string, error) {
@@ -120,7 +137,7 @@ func (w *WasmEdgeSandbox) List() ([]string, error) {
 func (w *WasmEdgeSandbox) Sate() (*libcontainer.ContainerState, error) {
 	var status = specs.StateRunning
 	state := specs.State{
-		Version:     "1.0",
+		Version:     "1.0", // todo
 		Status:      status,
 		Pid:         w.Config.Pid,
 		ID:          strconv.Itoa(w.Config.Pid),
@@ -130,17 +147,7 @@ func (w *WasmEdgeSandbox) Sate() (*libcontainer.ContainerState, error) {
 	containerSate := &libcontainer.ContainerState{
 		State: state,
 	}
-	cmd, err := os.Readlink("/proc/" + strconv.Itoa(w.Config.Pid) + "/exe")
-	if err != nil {
-		containerSate.State.Status = specs.StateStopped
-		return containerSate, err
-	}
-	stat, err := system.Stat(w.Config.Pid)
-	if err != nil {
-		status = specs.StateStopped
-	} else if stat.State == system.Zombie || stat.State == system.Dead {
-		status = specs.StateStopped
-	}
+	cmd, status, err := system.GetContainerCmdAndStatus(w.Config.Pid)
 	containerSate.Cmd = cmd
 	containerSate.State.Status = status
 	return containerSate, err

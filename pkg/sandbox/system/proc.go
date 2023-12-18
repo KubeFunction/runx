@@ -1,11 +1,17 @@
 package system
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
+
+	"github.com/opencontainers/runtime-spec/specs-go"
+
+	"github.com/kubefunction/runx/pkg/types"
 )
 
 // State is the status of a process.
@@ -110,4 +116,39 @@ func parseStat(data string) (stat Stat_t, err error) {
 	stat.State = State(state)
 	fmt.Sscanf(parts[22-3], "%d", &stat.StartTime)
 	return stat, nil
+}
+
+func WriteContainerInfo(runtimeRoot string, pid int, info *types.ContainerInfo) error {
+	containerInfo, err := json.Marshal(info)
+	if err != nil {
+		return err
+	}
+	infoPath := fmt.Sprintf("%s/%d/config.json", runtimeRoot, pid)
+	f, err := os.OpenFile(infoPath, os.O_WRONLY|os.O_TRUNC|os.O_CREATE, 0644)
+	defer f.Close()
+	if err != nil {
+		return err
+	}
+	_, err = f.WriteString(string(containerInfo))
+	return err
+}
+
+func GenerateContainerRootPath(runtimeRoot string, pid int) error {
+	return os.MkdirAll(fmt.Sprintf("%s/%d", runtimeRoot, pid), 0755)
+}
+
+func GetContainerCmdAndStatus(pid int) (string, specs.ContainerState, error) {
+	var cmd string
+	var status specs.ContainerState
+	cmd, err := os.Readlink("/proc/" + strconv.Itoa(pid) + "/exe")
+	if err != nil {
+		return "", specs.StateStopped, err
+	}
+	stat, err := Stat(pid)
+	if err != nil {
+		status = specs.StateStopped
+	} else if stat.State == Zombie || stat.State == Dead {
+		status = specs.StateStopped
+	}
+	return cmd, status, err
 }
