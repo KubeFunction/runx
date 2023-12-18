@@ -139,7 +139,7 @@ func GenerateContainerRootPath(runtimeRoot string, pid int) error {
 
 func GetContainerCmdAndStatus(pid int) (string, specs.ContainerState, error) {
 	var cmd string
-	var status specs.ContainerState
+	var status = specs.StateRunning
 	cmd, err := os.Readlink("/proc/" + strconv.Itoa(pid) + "/exe")
 	if err != nil {
 		return "", specs.StateStopped, err

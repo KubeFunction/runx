@@ -61,7 +61,7 @@ func (w *WasmEdgeSandbox) Init() (int, error) {
 	}
 	klog.V(3).Infof("WasmEdge: wasm process id %d", pid)
 	// write container info into config.json
-	cmString, status, err := system.GetContainerCmdAndStatus(pid)
+	cmdString, status, err := system.GetContainerCmdAndStatus(pid)
 	containerInfo := &types.ContainerInfo{
 		ContainerState: libcontainer.ContainerState{
 			State: specs.State{
@@ -72,7 +72,7 @@ func (w *WasmEdgeSandbox) Init() (int, error) {
 				Bundle:      w.Config.WASMFile,
 				Annotations: nil,
 			},
-			Cmd: cmString,
+			Cmd: cmdString,
 		},
 		ContainerId: strconv.Itoa(pid),
 		Labels:      nil,
